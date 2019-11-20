@@ -1,3 +1,9 @@
+/*Progietto per il controllo di un pannello dove sono posizionate le lettere del nome JASMINE.
+Esse sono composto da LED. Ogni lettera è gestita da un solo relè
+*/
+
+
+//valutare la gestione delle lettere come se fossero oggetti
 //output pin
 #define letterJPin_out 3
 #define letterAPin_out 4
@@ -38,5 +44,18 @@ void setup() {
 
 void loop() {
 	selctedMode=digitalRead(modeSelectorPin_in);
-	
+    switch(selctedMode){
+        case 0:
+            digitalWrite(letterJPin_out, HIGH);
+            digitalWrite(letterAPin_out, HIGH);
+            digitalWrite(letterMPin_out, HIGH);
+            digitalWrite(letterIPin_out, HIGH);
+            digitalWrite(letterNPin_out, HIGH);
+            digitalWrite(letterEPin_out, HIGH);
+            digitalWrite(letterSPin_out, HIGH);
+            break;
+        case 1:
+            //TODO
+            break;
+	}
 }

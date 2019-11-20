@@ -2,60 +2,93 @@
 Esse sono composto da LED. Ogni lettera è gestita da un solo relè
 */
 
+//numero lettere
+#define letterNumber 7
 
-//valutare la gestione delle lettere come se fossero oggetti
-//output pin
-#define letterJPin_out 3
-#define letterAPin_out 4
-#define letterSPin_out 5
-#define letterMPin_out 6
-#define letterIPin_out 7
-#define letterNPin_out 8
-#define letterEPin_out 9
+//letter pin
+#define letterJPin 3
+#define letterAPin 4
+#define letterSPin 5
+#define letterMPin 6
+#define letterIPin 7
+#define letterNPin 8
+#define letterEPin 9
 
-//input pin
-#define modeSelectorPin_in 10
+//pin per selzionare la modalità
+#define modeSelectorPin 10
 
-//letter state
-int letterJ_state=0;
-int letterA_state=0;
-int letterS_state=0;
-int letterM_state=0;
-int letterI_state=0;
-int letterN_state=0;
-int letterE_state=0;
+//modalità di lavoro del pin del selettore
+#define modeSelectorMode INPUT
+
+//modalità di lavoro dei pin delle lettere
+#define letterPinMode OUTPUT
+
+//durata accensione di una lettera
+#define timePerLetter 1000
+
+const int letterPin[letterNumber]= {letterJPin,letterAPin,letterSPin,letterMPin,letterIPin,letterNPin,letterEPin};
+int i=0;
 
 //variabile di stato per capire in che modalità mi trovo
 int currentMode=0;
 //variabile per capire la nuova modalità selezionata
-int selctedMode=0; 
+int selctedMode=0;
+//variabile per capire se lo stato è cambiato.
+int modeChanged=0;
+//varibile per capire quando il ciclo è incominciato
+int startCycleTime=0;
+//variabile per capire a che punto sono del ciclo
+int elapsedCycleTime=0;
+//variabile per modulare le condizioni temporali in base alla lettera che sto controllando
+int letterIndex=0;
 
+
+//=================================INIZIO SKETCH=================================
 void setup() {
-	//imposto i pin secondo la modalità scelta
-	pinMode(letterJPin_out, OUTPUT);
-	pinMode(letterAPin_out, OUTPUT);
-	pinMode(letterSPin_out, OUTPUT);
-	pinMode(letterMPin_out, OUTPUT);
-	pinMode(letterIPin_out, OUTPUT);
-	pinMode(letterNPin_out, OUTPUT);
-	pinMode(letterEPin_out, OUTPUT);
-	pinMode(modeSelectorPin_in, INPUT);
+	//imposto i pin secondo le modalità scelte
+    for (letterIndex;letterIndex>letterNumber+1;letterIndex++){
+        pinMode(letterPin[letterIndex], letterPinMode);
+    }
+    i=0;
+    pinMode(modeSelectorPin, modeSelectorMode);
+    //leggo subito lo stato del selettore
+    selctedMode=digitalRead(modeSelectorPin);
 }
 
 void loop() {
-	selctedMode=digitalRead(modeSelectorPin_in);
+    //scelgo che modalità utilizzare a seconda dello stato del selettore
     switch(selctedMode){
         case 0:
-            digitalWrite(letterJPin_out, HIGH);
-            digitalWrite(letterAPin_out, HIGH);
-            digitalWrite(letterMPin_out, HIGH);
-            digitalWrite(letterIPin_out, HIGH);
-            digitalWrite(letterNPin_out, HIGH);
-            digitalWrite(letterEPin_out, HIGH);
-            digitalWrite(letterSPin_out, HIGH);
+            //nella prima modalità vado ad accendere TUTTE le lettere
+            for (letterIndex;letterIndex>letterNumber+1;letterIndex++){
+                digitalWrite(letterPin[letterIndex], HIGH);
+            }
+            i=0;
             break;
         case 1:
-            //TODO
+            //nella seconda modalità vado a prima a varificare se devo ricominciare il ciclo (2 casi: ciclo iniziato OPPURE ciclo terminato, per cui devo ricominciare) 
+            if((selctedMode!=currentMode)||(elapsedCycleTime>(timePerLetter*(letterNumber*2+1)))){
+                //resetto il tempo di inizio ed il timer
+                startCycleTime=millis();
+                elapsedCycleTime=0;
+            }
+            //aggiorno lo stato del timer
+            elapsedCycleTime=millis()-startCycleTime;
+            //vado ad attivare le lettere se sono all'interno del range temporale di funzionamento
+            for (letterIndex;letterIndex>=letterNumber;letterIndex++){
+                if((elapsedCycleTime>timePerLetter*letterIndex+1)&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
+                    digitalWrite(letterPin[letterIndex], HIGH);
+                }
+                else {
+                    //spengo la lettera se è fuori dal range
+                    digitalWrite(letterPin[letterIndex], LOW);
+                }
+            }
+            i=0;
             break;
 	}
+    //salvo in che modalità sono attualmente
+    currentMode=selctedMode;
+    //leggo il selettore per capire se dovrò cambiare modalità
+	selctedMode=digitalRead(modeSelectorPin);
 }

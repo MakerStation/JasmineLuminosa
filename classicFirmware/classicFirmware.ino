@@ -21,15 +21,15 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 
 //pin per selzionare la modalità
 #define modeSelectorPin 10
-
 //modalità di lavoro del pin del selettore
 #define modeSelectorMode INPUT
-
 //modalità di lavoro dei pin delle lettere
 #define letterPinMode OUTPUT
+//durata accensione di una lettera (ms)
+#define timePerLetter 800
 
-//durata accensione di una lettera
-#define timePerLetter 1000
+#define steadyMode 0
+#define waveMode 1
 
 const int letterPin[letterNumber]= {letterJPin,letterAPin,letterSPin,letterMPin,letterIPin,letterNPin,letterEPin};
 
@@ -40,9 +40,9 @@ int selectedMode=0;
 //variabile per capire se lo stato è cambiato.
 int modeChanged=0;
 //varibile per capire quando il ciclo è incominciato
-int startCycleTime=0;
+unsigned long startCycleTime=0;
 //variabile per capire a che punto sono del ciclo
-int elapsedCycleTime=0;
+unsigned long elapsedCycleTime=0;
 //variabile per modulare le condizioni temporali in base alla lettera che sto controllando
 int letterIndex=0;
 
@@ -65,26 +65,31 @@ void setup() {
 void loop() {
 	#ifdef DEBUG
 		Serial.print("\n");
+		Serial.print(millis()/1000.0);
+		Serial.print("s - ");
+		Serial.print(elapsedCycleTime);
+		Serial.print("ms - ");
 		Serial.print(selectedMode);
 		Serial.print("/");
         Serial.print(currentMode);
-        Serial.print(" - LED:\t");
+        Serial.print(" - LED:");
 	#endif
     //scelgo che modalità utilizzare a seconda dello stato del selettore
     switch(selectedMode){
-        case 0:
+        case steadyMode:
             //nella prima modalità vado ad accendere TUTTE le lettere
             for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
                 digitalWrite(letterPin[letterIndex], HIGH);
 				#ifdef DEBUG
-					Serial.print("*\t");
+					Serial.print("*");
+					elapsedCycleTime=0;
 				#endif
             }
             letterIndex=0;
             break;
-        case 1:
+        case waveMode:
             //nella seconda modalità vado a prima a varificare se devo ricominciare il ciclo (2 casi: ciclo iniziato per la prima volta OPPURE ciclo terminato, per cui devo ricominciare) 
-            if((selectedMode!=currentMode)||(elapsedCycleTime>(timePerLetter*(letterNumber*2+1)))){
+            if((selectedMode!=currentMode)||(elapsedCycleTime>(timePerLetter*(letterNumber*2)))){
                 //resetto il tempo di inizio ed il timer
                 startCycleTime=millis();
                 elapsedCycleTime=0;
@@ -92,18 +97,18 @@ void loop() {
             //aggiorno lo stato del timer
             elapsedCycleTime=millis()-startCycleTime;
             //vado ad attivare le lettere se sono all'interno del range temporale di funzionamento
-			for (letterIndex;letterIndex<=letterNumber;letterIndex++){
-                if((elapsedCycleTime>timePerLetter*letterIndex+1)&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
+			for (letterIndex;letterIndex<letterNumber;letterIndex++){
+                if((elapsedCycleTime>timePerLetter*(letterIndex+1))&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
                     digitalWrite(letterPin[letterIndex], HIGH);
 					#ifdef DEBUG
-						Serial.print("*\t");
+						Serial.print("*");
 					#endif
 				}
                 else {
                     //spengo la lettera se è fuori dal range
                     digitalWrite(letterPin[letterIndex], LOW);
 					#ifdef DEBUG
-						Serial.print("-\t");
+						Serial.print("-");
 					#endif
                 }
             }

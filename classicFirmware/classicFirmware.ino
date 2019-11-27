@@ -7,10 +7,10 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 
 #define DEBUG
 
-//numero lettere
+//numero delle lettere controllate
 #define letterNumber 7
 
-//letter pin
+//pin delle lettere
 #define letterJPin 3
 #define letterAPin 4
 #define letterSPin 5
@@ -19,15 +19,21 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 #define letterNPin 8
 #define letterEPin 9
 
-//pin per selzionare la modalità
-#define modeSelectorPin 10
+//Attualmente sono gestite sosolamente 2 modalità determinate a seconda se l'interruttore apre o chiude il contatto.
+
+//pin per selzionare la modalità (alto o basso)
+#define modeSelectorPin 12
 //modalità di lavoro del pin del selettore
 #define modeSelectorMode INPUT
 //modalità di lavoro dei pin delle lettere
 #define letterPinMode OUTPUT
-//durata accensione di una lettera (ms)
+//durata(ms) accensione tra una lettera e l'altra
 #define timePerLetter 800
 
+/*Le due modalità sono:
+	- steadyMode: se il selettore apre	|	tutte le lettere accese
+	- waveMode: Se il selettore chiude	|	Le lettere vengono prima accese in serie e poi spente.	
+	*/
 #define steadyMode 0
 #define waveMode 1
 
@@ -50,7 +56,7 @@ int letterIndex=0;
 //=================================INIZIO SKETCH=================================
 void setup() {
 	#ifdef DEBUG
-	Serial.begin(115200);
+	Serial.begin(9600);
 	#endif
 	//imposto i pin secondo le modalità scelte
     for (letterIndex;letterIndex>letterNumber+1;letterIndex++){

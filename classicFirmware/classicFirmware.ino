@@ -5,7 +5,7 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 // alt+254
 // alt+176
 
-#define DEBUG
+//#define DEBUG
 
 //numero lettere
 #define letterNumber 7
@@ -53,7 +53,7 @@ void setup() {
 	Serial.begin(115200);
 	#endif
 	//imposto i pin secondo le modalità scelte
-    for (letterIndex;letterIndex>letterNumber+1;letterIndex++){
+    for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
         pinMode(letterPin[letterIndex], letterPinMode);
     }
     letterIndex=0;

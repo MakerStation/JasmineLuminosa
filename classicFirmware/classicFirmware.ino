@@ -5,7 +5,7 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 // alt+254
 // alt+176
 
-//#define DEBUG
+#define DEBUG
 
 //numero lettere
 #define letterNumber 7
@@ -26,7 +26,7 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 //modalità di lavoro dei pin delle lettere
 #define letterPinMode OUTPUT
 //durata accensione di una lettera (ms)
-#define timePerLetter 800
+#define defaultTimePerLetter 800
 
 #define steadyMode 0
 #define waveMode 1
@@ -46,6 +46,7 @@ unsigned long elapsedCycleTime=0;
 //variabile per modulare le condizioni temporali in base alla lettera che sto controllando
 int letterIndex=0;
 
+unsigned long timePerLetter=defaultTimePerLetter;
 
 //=================================INIZIO SKETCH=================================
 void setup() {
@@ -75,46 +76,49 @@ void loop() {
         Serial.print(" - LED:");
 	#endif
     //scelgo che modalità utilizzare a seconda dello stato del selettore
-    switch(selectedMode){
-        case steadyMode:
-            //nella prima modalità vado ad accendere TUTTE le lettere
-            for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
-                digitalWrite(letterPin[letterIndex], HIGH);
+	if(selectedMode==steadyMode){
+        //nella prima modalità vado ad accendere TUTTE le lettere
+		for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
+			digitalWrite(letterPin[letterIndex], LOW);
+			#ifdef DEBUG
+				Serial.print("*");
+				elapsedCycleTime=0;
+			#endif
+		}
+		letterIndex=0;
+	}
+	else if(selectedMode==waveMode){
+		//nella seconda modalità vado a prima a varificare se devo ricominciare il ciclo (2 casi: ciclo iniziato per la prima volta OPPURE ciclo terminato, per cui devo ricominciare) 
+		if((selectedMode!=currentMode)||(elapsedCycleTime>(timePerLetter*(letterNumber*2)))){
+			//resetto il tempo di inizio ed il timer
+			startCycleTime=millis();
+			elapsedCycleTime=0;
+		}
+		//aggiorno lo stato del timer
+		elapsedCycleTime=millis()-startCycleTime;
+		//vado ad attivare le lettere se sono all'interno del range temporale di funzionamento
+		for (letterIndex;letterIndex<letterNumber;letterIndex++){
+			if(((elapsedCycleTime>timePerLetter*(letterIndex+1)))&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
+				digitalWrite(letterPin[letterIndex], LOW);
 				#ifdef DEBUG
 					Serial.print("*");
-					elapsedCycleTime=0;
 				#endif
-            }
-            letterIndex=0;
-            break;
-        case waveMode:
-            //nella seconda modalità vado a prima a varificare se devo ricominciare il ciclo (2 casi: ciclo iniziato per la prima volta OPPURE ciclo terminato, per cui devo ricominciare) 
-            if((selectedMode!=currentMode)||(elapsedCycleTime>(timePerLetter*(letterNumber*2)))){
-                //resetto il tempo di inizio ed il timer
-                startCycleTime=millis();
-                elapsedCycleTime=0;
-            }
-            //aggiorno lo stato del timer
-            elapsedCycleTime=millis()-startCycleTime;
-            //vado ad attivare le lettere se sono all'interno del range temporale di funzionamento
-			for (letterIndex;letterIndex<letterNumber;letterIndex++){
-                if((elapsedCycleTime>timePerLetter*(letterIndex+1))&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
-                    digitalWrite(letterPin[letterIndex], HIGH);
-					#ifdef DEBUG
-						Serial.print("*");
-					#endif
-				}
-                else {
-                    //spengo la lettera se è fuori dal range
-                    digitalWrite(letterPin[letterIndex], LOW);
-					#ifdef DEBUG
-						Serial.print("-");
-					#endif
-                }
-            }
-            letterIndex=0;
-			break;
+			}
+			else {
+				//spengo la lettera se è fuori dal range
+				digitalWrite(letterPin[letterIndex], HIGH);
+				#ifdef DEBUG
+					Serial.print("-");
+				#endif
+			}
+		}
+		letterIndex=0;
 	}
+	#ifdef DEBUG
+		Serial.print("\t|\t");
+		Serial.print((unsigned long)(timePerLetter*(letterNumber*2+1)));
+	#endif
+	
     //salvo in che modalità sono attualmente
     currentMode=selectedMode;
     //leggo il selettore per capire se dovrò cambiare modalità

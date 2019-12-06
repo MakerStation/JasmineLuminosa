@@ -51,7 +51,7 @@ unsigned long timePerLetter=defaultTimePerLetter;
 //=================================INIZIO SKETCH=================================
 void setup() {
 	#ifdef DEBUG
-	Serial.begin(115200);
+	Serial.begin(2000000);
 	#endif
 	//imposto i pin secondo le modalità scelte
     for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
@@ -115,11 +115,10 @@ void loop() {
 		letterIndex=0;
 	}
 	#ifdef DEBUG
-		Serial.print("\t|\t");
+		Serial.print(" | ");
 		Serial.print((unsigned long)(timePerLetter*(letterNumber*2+1)));
 	#endif
-	
-    //salvo in che modalità sono attualmente
+	//salvo in che modalità sono attualmente
     currentMode=selectedMode;
     //leggo il selettore per capire se dovrò cambiare modalità
 	selectedMode=digitalRead(modeSelectorPin);

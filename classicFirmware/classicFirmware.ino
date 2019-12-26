@@ -7,6 +7,8 @@ Esse sono composta da LED. Ogni lettera è gestita da un solo relè
 
 #define DEBUG
 
+#define testLed 1
+
 //numero lettere
 #define letterNumber 7
 
@@ -46,6 +48,8 @@ unsigned long elapsedCycleTime=0;
 //variabile per modulare le condizioni temporali in base alla lettera che sto controllando
 int letterIndex=0;
 
+int lightON=0;
+
 unsigned long timePerLetter=defaultTimePerLetter;
 
 //=================================INIZIO SKETCH=================================
@@ -61,6 +65,13 @@ void setup() {
     pinMode(modeSelectorPin, modeSelectorMode);
     //leggo subito lo stato del selettore
     selectedMode=digitalRead(modeSelectorPin);
+	
+	if(testLed){
+		lightON=1;
+	}
+	else if(!testLed){
+		lightON=0;
+	}
 }
 
 void loop() {
@@ -79,7 +90,7 @@ void loop() {
 	if(selectedMode==steadyMode){
         //nella prima modalità vado ad accendere TUTTE le lettere
 		for (letterIndex;letterIndex<letterNumber+1;letterIndex++){
-			digitalWrite(letterPin[letterIndex], LOW);
+			digitalWrite(letterPin[letterIndex], lightON);
 			#ifdef DEBUG
 				Serial.print("*");
 				elapsedCycleTime=0;
@@ -99,14 +110,14 @@ void loop() {
 		//vado ad attivare le lettere se sono all'interno del range temporale di funzionamento
 		for (letterIndex;letterIndex<letterNumber;letterIndex++){
 			if(((elapsedCycleTime>timePerLetter*(letterIndex+1)))&&(elapsedCycleTime<(timePerLetter*(letterNumber+letterIndex+1)))){
-				digitalWrite(letterPin[letterIndex], LOW);
+				digitalWrite(letterPin[letterIndex], lightON); //
 				#ifdef DEBUG
 					Serial.print("*");
 				#endif
 			}
 			else {
 				//spengo la lettera se è fuori dal range
-				digitalWrite(letterPin[letterIndex], HIGH);
+				digitalWrite(letterPin[letterIndex], !lightON);
 				#ifdef DEBUG
 					Serial.print("-");
 				#endif

@@ -12,7 +12,7 @@ Considerando i tempi di consegna e che non inficiano o rallentano il fw ho decis
 #define DEBUG
 
 //rapida impostazione per cambiare la logica di controllo a seconda che stia utilizzando dei led o i rele: "1" per i led; "0" per i rele
-#define testLed 1
+#define testLed 0
 
 //numero lettere
 #define letterNumber 7
@@ -78,6 +78,11 @@ void setup() {
 	else if(!testLed){
 		lightON=0;
 	}
+	for (letterIndex;letterIndex<=letterNumber;letterIndex++){
+		//delay(200);
+		digitalWrite(letterPin[letterIndex], !lightON);
+	}
+	letterIndex=0;
 	//semplice accensione iniziale per non avere la stangata di corrente subito.
 	for (letterIndex;letterIndex<=letterNumber;letterIndex++){
 		delay(200);
